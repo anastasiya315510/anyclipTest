@@ -1,0 +1,3 @@
+Request(logFile=A.log, logLimit=200, abTest=ABTest(enabled=true, variants=[Variant(variantName=A, percentage=70, logFile=null), Variant(variantName=B, percentage=30, logFile=B.log)]))
+Request(logFile=A.log, logLimit=200, abTest=ABTest(enabled=true, variants=[Variant(variantName=A, percentage=70, logFile=null), Variant(variantName=B, percentage=30, logFile=B.log)]))
+Request(logFile=A.log, logLimit=200, abTest=ABTest(enabled=true, variants=[Variant(variantName=A, percentage=70, logFile=null), Variant(variantName=B, percentage=30, logFile=B.log)]))
