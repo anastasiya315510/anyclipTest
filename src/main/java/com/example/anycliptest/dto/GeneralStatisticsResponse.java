@@ -1,10 +1,4 @@
-/*
- author Anastasiya
- created on 05/08/2021
- */
-
-
-package com.example.anycliptest.model;
+package com.example.anycliptest.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class GeneralStatistics {
+public class GeneralStatisticsResponse {
     private double totalRequests;
     private double avgProcessTime;
     private double avgWriteTime;

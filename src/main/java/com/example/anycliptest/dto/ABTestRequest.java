@@ -1,23 +1,17 @@
-/*
- author Anastasiya
- created on 05/08/2021
- */
-
-
-package com.example.anycliptest.model;
+package com.example.anycliptest.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ABTest {
+public class ABTestRequest {
     private boolean enabled;
-    private ArrayList<Variant> variants;
+    private List<VariantRequest> variants;
 }

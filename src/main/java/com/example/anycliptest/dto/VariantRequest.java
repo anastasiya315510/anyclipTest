@@ -1,10 +1,4 @@
-/*
- author Anastasiya
- created on 05/08/2021
- */
-
-
-package com.example.anycliptest.model;
+package com.example.anycliptest.dto;
 
 import lombok.*;
 
@@ -13,9 +7,9 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @Getter
-public class Variant {
+public class VariantRequest {
     private String variantName;
-    private int percentage;
+    private Integer percentage;
     private String logFile;
 
 }

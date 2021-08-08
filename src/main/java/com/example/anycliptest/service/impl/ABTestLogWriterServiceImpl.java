@@ -1,17 +1,14 @@
-/*
- author Anastasiya
- created on 05/08/2021
- */
+package com.example.anycliptest.service.impl;
 
 
-package com.example.anycliptest.service;
-
-
-import com.example.anycliptest.model.Request;
-import com.example.anycliptest.model.Response;
-import com.example.anycliptest.model.Variant;
+import com.example.anycliptest.dto.LogRequest;
+import com.example.anycliptest.dto.LogResponse;
+import com.example.anycliptest.dto.VariantRequest;
+import com.example.anycliptest.service.ABTestLogWriterService;
+import com.example.anycliptest.service.FileWriterService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Range;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedWriter;
@@ -20,29 +17,41 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toMap;
 
 @Service
 @Slf4j
-public class LogHandlerEnabledTrue implements EnabledTrue {
-    private ConcurrentLinkedDeque<Request> requests = new ConcurrentLinkedDeque<>();
-    private Map<String, Integer> percentage;
-    private HashMap<String, Range<Integer>> resMap = new HashMap<>();
+public class ABTestLogWriterServiceImpl implements ABTestLogWriterService {
+    private ConcurrentLinkedDeque<LogRequest> requests = new ConcurrentLinkedDeque<>();
+    private Map<String, Integer> percentage = new ConcurrentHashMap<>();
+    private Map<String, Range<Integer>> resMap = new HashMap<>();
     int i = 0;
     private long numOfLines;
 
+    private final Lock lock = new ReentrantLock();
 
-    //TODO statistics
-    //TODO tests
+    private final AtomicLong numberOfLines = new AtomicLong(0);
+    private final AtomicBoolean isFirstCall = new AtomicBoolean(true);
+
+    @Autowired
+    private FileWriterService fileWriterService;
 
 
     @Override
-    public Response putToFile(Request logRequest) {
+    public LogResponse writeToFile(LogRequest logRequest) {
         if (requests.isEmpty()) {
             requests.add(logRequest);
             setPercentageInFirstRequest(requests.getFirst());
@@ -50,7 +59,7 @@ public class LogHandlerEnabledTrue implements EnabledTrue {
         requests.add(logRequest);
         var random = new Random().nextInt(100);
         String variant = resMap.entrySet().stream().filter(a -> a.getValue().contains(random)).map(Map.Entry::getKey).findFirst().get();
-        String fileName = requests.getLast().getAbTest().getVariants().stream().filter(a -> a.getVariantName().contains(variant)).findFirst().map(Variant::getLogFile).orElse(requests.getFirst().getLogFile());
+        String fileName = requests.getLast().getAbTest().getVariants().stream().filter(a -> a.getVariantName().contains(variant)).findFirst().map(VariantRequest::getLogFile).orElse(requests.getFirst().getLogFile());
         log.info("fileName: " + fileName);
         if (Files.exists(Path.of(fileName))) {
             try (Stream<String> lines = Files.lines(Path.of(fileName), Charset.defaultCharset())) {
@@ -59,19 +68,20 @@ public class LogHandlerEnabledTrue implements EnabledTrue {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (numOfLines > Integer.parseInt(requests.getFirst().getLogLimit())) {
+            if (numOfLines > requests.getFirst().getLogLimit()) {
                 log.error("Count of lines more than expected. Expected: " + logRequest.getLogLimit() + " Current: " + numOfLines);
-                return Response.builder().build();
+                return LogResponse.builder().build();
             }
         }
         writeToFile(fileName, variant);
-        return Response.builder().logFile(fileName).value(variant).build();
+        return LogResponse.builder().logFile(fileName).value(variant).build();
 
     }
 
 
-    private void setPercentageInFirstRequest(Request logRequest) {
-        percentage = logRequest.getAbTest().getVariants().stream().collect(Collectors.toMap(Variant::getVariantName, Variant::getPercentage));
+
+    private void setPercentageInFirstRequest(LogRequest logRequest) {
+        percentage = logRequest.getAbTest().getVariants().stream().collect(Collectors.toMap(VariantRequest::getVariantName, VariantRequest::getPercentage));
 
 
         percentage

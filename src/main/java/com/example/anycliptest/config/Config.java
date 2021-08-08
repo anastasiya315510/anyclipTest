@@ -1,9 +1,3 @@
-/*
- author Anastasiya
- created on 05/08/2021
- */
-
-
 package com.example.anycliptest.config;
 
 import io.prometheus.client.CollectorRegistry;
@@ -22,8 +16,7 @@ import java.util.concurrent.Executor;
 public class Config {
     @Bean
     public Executor asyncExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        return executor;
+        return new ThreadPoolTaskExecutor();
     }
     @Bean
     @ConditionalOnMissingBean
